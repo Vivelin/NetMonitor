@@ -7,16 +7,32 @@ Console.CancelKeyPress += (sender, e) =>
     e.Cancel = true;
 };
 
+var lastStatus = NetworkStatus.Unknown;
+var lastChange = DateTimeOffset.UtcNow;
+
 using var timer = new Timer(OnTick, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
 waitHandle.WaitOne();
 
-static void OnTick(object? state)
+void OnTick(object? state)
 {
     var status = CheckNetworkInterfaces();
-    Console.WriteLine($"{DateTime.Now:yyyy-MM-dd'T'HH:mm:ss}: {status}");
+    if (status != lastStatus)
+    {
+        lastStatus = status;
+        lastChange = DateTimeOffset.UtcNow;
+        Console.WriteLine($"{DateTime.Now:yyyy-MM-dd'T'HH:mm:ss}: {status}");
+    }
+    else
+    {
+        var timeSinceLastChange = DateTimeOffset.UtcNow - lastChange;
+        if (timeSinceLastChange > TimeSpan.FromHours(1))
+        {
+            Console.WriteLine("No change in last hour.");
+        }
+    }
 }
 
-static NetworkStatus CheckNetworkInterfaces(double expectedMbps = 800) 
+static NetworkStatus CheckNetworkInterfaces(double expectedMbps = 800)
 {
     var net = NetworkInterface.GetAllNetworkInterfaces()
         .Where(x => x.OperationalStatus == OperationalStatus.Up

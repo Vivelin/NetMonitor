@@ -28,7 +28,7 @@ void OnTick(object? state)
         if (timeSinceLastChange > TimeSpan.FromHours(1))
         {
             lastChange = DateTimeOffset.UtcNow; // Don't spam this message after one hour
-            Console.WriteLine("{DateTime.Now:yyyy-MM-dd'T'HH:mm:ss}: No change in last hour.");
+            Console.WriteLine($"{DateTime.Now:yyyy-MM-dd'T'HH:mm:ss}: No change in last hour.");
         }
     }
 }

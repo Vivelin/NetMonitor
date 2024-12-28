@@ -10,8 +10,14 @@ Console.CancelKeyPress += (sender, e) =>
 var lastStatus = NetworkStatus.Unknown;
 var lastChange = DateTimeOffset.UtcNow;
 
+NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
+NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAvailabilityChanged;
+
 using var timer = new Timer(OnTick, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
 waitHandle.WaitOne();
+
+NetworkChange.NetworkAvailabilityChanged -= NetworkChange_NetworkAvailabilityChanged;
+NetworkChange.NetworkAddressChanged -= NetworkChange_NetworkAddressChanged;
 
 void OnTick(object? state)
 {
@@ -31,6 +37,18 @@ void OnTick(object? state)
             Console.WriteLine($"{DateTime.Now:yyyy-MM-dd'T'HH:mm:ss}: No change in last hour.");
         }
     }
+}
+
+void NetworkChange_NetworkAvailabilityChanged(object? sender, NetworkAvailabilityEventArgs e)
+{
+    Console.WriteLine($"{DateTime.Now:yyyy-MM-dd'T'HH:mm:ss}: Network availability changed to {e.IsAvailable}.");
+    OnTick(null);
+}
+
+void NetworkChange_NetworkAddressChanged(object? sender, EventArgs e)
+{
+    Console.WriteLine($"{DateTime.Now:yyyy-MM-dd'T'HH:mm:ss}: Network address changed.");
+    OnTick(null);
 }
 
 static NetworkStatus CheckNetworkInterfaces(double expectedMbps = 800)
@@ -53,6 +71,7 @@ static NetworkStatus CheckNetworkInterfaces(double expectedMbps = 800)
 
     return NetworkStatus.Normal;
 }
+
 
 enum NetworkStatus
 {

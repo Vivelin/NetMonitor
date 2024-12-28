@@ -1,6 +1,7 @@
 ﻿using System.Net.NetworkInformation;
 
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 using Vivelin.NetMonitor.Networking;
 
@@ -8,18 +9,17 @@ namespace Vivelin.NetMonitor;
 
 public class NetMonitorService : IHostedService, IDisposable
 {
-    public NetMonitorService(INetworkService networkService)
+    public NetMonitorService(INetworkService networkService, ILogger<NetMonitorService> logger)
     {
         Timer = new Timer(OnTimerTick, null, Timeout.Infinite, Timeout.Infinite);
         NetworkService = networkService;
+        Logger = logger;
     }
 
     public INetworkService NetworkService { get; }
-
     public NetworkStatus LastStatus { get; set; } = NetworkStatus.Unknown;
-
     public DateTimeOffset LastChange { get; set; } = DateTimeOffset.UtcNow;
-
+    protected ILogger<NetMonitorService> Logger { get; }
     protected Timer Timer { get; }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -61,7 +61,8 @@ public class NetMonitorService : IHostedService, IDisposable
         {
             LastStatus = status;
             LastChange = DateTimeOffset.UtcNow;
-            Console.WriteLine($"{DateTime.Now:yyyy-MM-dd'T'HH:mm:ss}: {status}");
+
+            Logger.LogInformation("{Status}", status);
         }
         else
         {
@@ -69,20 +70,20 @@ public class NetMonitorService : IHostedService, IDisposable
             if (timeSinceLastChange > TimeSpan.FromHours(1))
             {
                 LastChange = DateTimeOffset.UtcNow; // Don't spam this message after one hour
-                Console.WriteLine($"{DateTime.Now:yyyy-MM-dd'T'HH:mm:ss}: No change in last hour.");
+                Logger.LogInformation("No change in last hour.");
             }
         }
     }
 
     private void NetworkChange_NetworkAvailabilityChanged(object? sender, NetworkAvailabilityEventArgs e)
     {
-        Console.WriteLine($"{DateTime.Now:yyyy-MM-dd'T'HH:mm:ss}: Network availability changed to {e.IsAvailable}.");
+        Logger.LogDebug("Network availability changed..");
         OnTimerTick(null);
     }
 
     private void NetworkChange_NetworkAddressChanged(object? sender, EventArgs e)
     {
-        Console.WriteLine($"{DateTime.Now:yyyy-MM-dd'T'HH:mm:ss}: Network address changed.");
+        Logger.LogDebug("Network address changed.");
         OnTimerTick(null);
     }
 }

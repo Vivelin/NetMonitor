@@ -9,7 +9,7 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Logging.AddConsole(options => options.FormatterName = "Custom");
 builder.Logging.AddConsoleFormatter<CustomConsoleFormatter, CustomConsoleFormatterOptions>();
 
-builder.Services.AddScoped<INetworkService, DefaultNetworkService>();
+builder.Services.AddSingleton<INetworkService, DefaultNetworkService>();
 builder.Services.AddHostedService<NetMonitorService>();
 
 var host = builder.Build();

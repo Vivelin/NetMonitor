@@ -19,16 +19,16 @@ public class CustomConsoleFormatter(IOptionsMonitor<CustomConsoleFormatterOption
     {
         var level = logEntry.LogLevel switch
         {
-            LogLevel.Trace => "[TRACE]",
-            LogLevel.Debug => "[DEBUG]",
-            LogLevel.Information => "[INFO ]",
-            LogLevel.Warning => "[WARN ]",
-            LogLevel.Error => "[ERROR]",
-            LogLevel.Critical => "[FATAL]",
+            LogLevel.Trace => "\e[90m[TRACE]",
+            LogLevel.Debug => "\e[96m[DEBUG]",
+            LogLevel.Information => "\e[92m [INFO]",
+            LogLevel.Warning => "\e[93m [WARN]",
+            LogLevel.Error => "\e[91m[ERROR]",
+            LogLevel.Critical => "\e[91m[FATAL]",
             _ => null,
         };
         textWriter.Write(level);
-        textWriter.Write(" ");
+        textWriter.Write("\e[2m ");
 
         var time = Options.UseUtcTimestamp ? DateTimeOffset.UtcNow : DateTimeOffset.Now;
         var timestamp = time.ToString(Options.TimestampFormat ?? DefaultTimestampFormat, CultureInfo.InvariantCulture);
@@ -36,8 +36,12 @@ public class CustomConsoleFormatter(IOptionsMonitor<CustomConsoleFormatterOption
         textWriter.Write(" ");
 
         var message = logEntry.Formatter(logEntry.State, logEntry.Exception);
+        textWriter.Write(logEntry.LogLevel switch
+        {
+            LogLevel.Critical => "\e[0;1;91m",
+            _ => "\e[0m"
+        });
         textWriter.Write(message);
-        textWriter.WriteLine();
-
+        textWriter.WriteLine("\e[0m");
     }
 }

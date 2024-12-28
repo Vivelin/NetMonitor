@@ -62,7 +62,13 @@ public class NetMonitorService : IHostedService, IDisposable
             LastStatus = status;
             LastChange = DateTimeOffset.UtcNow;
 
-            Logger.LogInformation("{Status}", status);
+            Logger.Log(status switch
+            {
+                NetworkStatus.LowLinkSpeed => LogLevel.Warning,
+                NetworkStatus.Offline => LogLevel.Error,
+                NetworkStatus.Unknown => LogLevel.Debug,
+                _ => LogLevel.Information
+            }, "{Status}", status);
         }
         else
         {
@@ -70,14 +76,14 @@ public class NetMonitorService : IHostedService, IDisposable
             if (timeSinceLastChange > TimeSpan.FromHours(1))
             {
                 LastChange = DateTimeOffset.UtcNow; // Don't spam this message after one hour
-                Logger.LogInformation("No change in last hour.");
+                Logger.LogDebug("No change in last hour.");
             }
         }
     }
 
     private void NetworkChange_NetworkAvailabilityChanged(object? sender, NetworkAvailabilityEventArgs e)
     {
-        Logger.LogDebug("Network availability changed..");
+        Logger.LogDebug("Network availability changed.");
         OnTimerTick(null);
     }
 

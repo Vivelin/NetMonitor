@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <Version>2.0</Version>
+    <Version>2.1</Version>
     <Authors>Vivelin</Authors>
     <Title>Network Monitor utility</Title>
     <PackageId>NetMonitor</PackageId>

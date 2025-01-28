@@ -89,7 +89,10 @@ public class NetMonitorService : IHostedService, IDisposable
 
     private void NetworkChange_NetworkAddressChanged(object? sender, EventArgs e)
     {
-        Logger.LogDebug("Network address changed.");
+        var newName = NetworkService.GetAdapterName() ?? "All interfaces offline";
+        var newIP = NetworkService.GetPrimaryIPv4();
+        Logger.LogDebug("Network address changed. New IP address: {IPAddress} ({NetworkInterface})", newIP, newName);
+
         OnTimerTick(null);
     }
 }
